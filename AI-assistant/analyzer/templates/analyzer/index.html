@@ -1,0 +1,446 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI-ассистент кафедры</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121933;
+      --panel-2: #0f1530;
+      --line: #253055;
+      --text: #edf2ff;
+      --muted: #a9b4d0;
+      --subtle: #7f8bb0;
+      --accent: #6ea8fe;
+      --accent-2: #8ef0d4;
+      --user: #1e2f63;
+      --bot: #151d3d;
+      --tag-bg: #1a2347;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: linear-gradient(180deg, #09101f, #0b1430);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      min-height: 100vh;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+    }
+
+    .side {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - 40px);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .msg {
+      max-width: 86%;
+      padding: 16px 18px;
+      border-radius: 18px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border: 1px solid var(--line);
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      background: var(--user);
+    }
+
+    .msg.bot {
+      align-self: flex-start;
+      background: var(--bot);
+    }
+
+    .msg.bot.long {
+      max-width: 100%;
+    }
+
+    .sources {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .source-tag {
+      background: var(--tag-bg);
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .composer {
+      border-top: 1px solid var(--line);
+      padding: 16px;
+      background: rgba(10, 16, 35, .8);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 72px;
+      max-height: 180px;
+      resize: vertical;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #0d1430;
+      color: var(--text);
+      padding: 14px;
+      font: inherit;
+      outline: none;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      gap: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #081225;
+      font-weight: 700;
+      padding: 10px 16px;
+      cursor: pointer;
+    }
+
+    .muted {
+      color: var(--subtle);
+      font-size: 13px;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--tag-bg);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .status-list {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .typing {
+      opacity: .8;
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .wrap {
+        grid-template-columns: 1fr;
+      }
+      .main {
+        min-height: auto;
+      }
+      .msg {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="card side">
+    <div>
+      <h2 style="margin:0 0 10px;">Ассистент кафедры</h2>
+      <div class="muted">RAG-поиск по учебным и аналитическим данным</div>
+    </div>
+
+    <div class="card" style="padding:14px; background:var(--panel-2);">
+      <h3 style="margin:0 0 10px;">О системе</h3>
+      <div class="muted" style="line-height:1.6;">
+        Анализирует учебные планы, компетенции, документы и результаты тестирования.
+      </div>
+      <div style="margin-top:12px;">
+        <span class="badge">Аналитика</span>
+        <span class="badge">Учебные планы</span>
+        <span class="badge">Компетенции</span>
+        <span class="badge">Документы</span>
+      </div>
+    </div>
+
+    <div class="card" style="padding:14px; background:var(--panel-2);">
+      <h3 style="margin:0 0 10px;">Статус базы</h3>
+      <div class="status-list">
+        <div>Файлов: {{ status.total }}</div>
+        <div>Чанков: {{ status.chunks_count }}</div>
+        <div>LLM: {{ status.llm_mode }}</div>
+        <div>Векторный индекс: {% if status.vector_ready %}готов{% else %}нет{% endif %}</div>
+        <div>Студентов: {{ status.students }}</div>
+      </div>
+    </div>
+
+    {% if is_teacher %}
+    <div>
+      <button id="reloadBtn" type="button">Переиндексировать</button>
+    </div>
+    {% endif %}
+  </aside>
+
+  <main class="card main">
+    <div class="hero">
+      <h1>Чем могу помочь?</h1>
+      <p>
+        {% if is_teacher %}
+        Можно спрашивать про успеваемость, сложные темы, дисциплины, графики и документы.
+        {% else %}
+        Можно спрашивать про учебные планы, компетенции, дисциплины и документы кафедры.
+        {% endif %}
+      </p>
+    </div>
+
+    <div id="chat" class="chat">
+      <div class="msg bot">
+        {% if is_teacher %}
+        Например: «Какие темы самые сложные у СП?» или «Напиши все дисциплины учебного плана СП».
+        {% else %}
+        Например: «Какие компетенции формируются у СП?» или «Напиши все дисциплины учебного плана СП».
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="composer">
+      <textarea id="question" placeholder="Введите вопрос..."></textarea>
+      <div class="actions">
+        <div class="muted">Enter — отправить · Shift+Enter — перенос строки</div>
+        <button id="sendBtn" type="button">Отправить</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const chatEl = document.getElementById('chat');
+  const inputEl = document.getElementById('question');
+  const sendBtn = document.getElementById('sendBtn');
+  const reloadBtn = document.getElementById('reloadBtn');
+  let history = [];
+
+  function escapeHtml(str) {
+    return (str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function addMessage(role, text, sources = []) {
+    const div = document.createElement('div');
+    div.className = `msg ${role} ${text && text.length > 2500 ? 'long' : ''}`;
+
+    const content = document.createElement('div');
+    content.innerHTML = escapeHtml(text);
+    div.appendChild(content);
+
+    if (role === 'bot' && Array.isArray(sources) && sources.length) {
+      const sourcesWrap = document.createElement('div');
+      sourcesWrap.className = 'sources';
+
+      sources.forEach(src => {
+        const tag = document.createElement('div');
+        tag.className = 'source-tag';
+        tag.textContent = `${src.type}: ${src.source}`;
+        sourcesWrap.appendChild(tag);
+      });
+
+      div.appendChild(sourcesWrap);
+    }
+
+    chatEl.appendChild(div);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+
+  function addTyping() {
+    const div = document.createElement('div');
+    div.className = 'msg bot typing';
+    div.id = 'typing';
+    div.textContent = 'Ассистент формирует ответ...';
+    chatEl.appendChild(div);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typing');
+    if (el) el.remove();
+  }
+
+  async function sendQuestion() {
+    const question = inputEl.value.trim();
+    if (!question) return;
+
+    addMessage('user', question);
+    history.push({ role: 'user', content: question });
+    inputEl.value = '';
+    addTyping();
+
+    try {
+      const resp = await fetch('/chat/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, history })
+      });
+
+      const data = await resp.json();
+      removeTyping();
+
+      if (!resp.ok) {
+        addMessage('bot', data.error || 'Ошибка при обработке запроса');
+        return;
+      }
+
+      const answer = (data.answer || '').trim() || 'Не удалось сформировать ответ.';
+      addMessage('bot', answer, data.sources || []);
+      history.push({ role: 'assistant', content: answer });
+    } catch (e) {
+      removeTyping();
+      addMessage('bot', 'Ошибка соединения с сервером.');
+    }
+  }
+
+  sendBtn.addEventListener('click', sendQuestion);
+
+  inputEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+
+      const start = this.selectionStart;
+      const end = this.selectionEnd;
+      const value = this.value;
+      const indent = '    ';
+
+      const selected = value.slice(start, end);
+
+      if (selected.includes('\n')) {
+        const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+        const block = value.slice(lineStart, end);
+        const lines = block.split('\n');
+
+        if (e.shiftKey) {
+          const updatedLines = lines.map(line => {
+            if (line.startsWith(indent)) return line.slice(indent.length);
+            if (line.startsWith('\t')) return line.slice(1);
+            return line;
+          });
+
+          const updatedBlock = updatedLines.join('\n');
+          this.value = value.slice(0, lineStart) + updatedBlock + value.slice(end);
+          this.selectionStart = lineStart;
+          this.selectionEnd = lineStart + updatedBlock.length;
+        } else {
+          const updatedBlock = lines.map(line => indent + line).join('\n');
+          this.value = value.slice(0, lineStart) + updatedBlock + value.slice(end);
+          this.selectionStart = lineStart;
+          this.selectionEnd = lineStart + updatedBlock.length;
+        }
+
+        return;
+      }
+
+      if (e.shiftKey) {
+        const beforeCursor = value.slice(0, start);
+        if (beforeCursor.endsWith(indent)) {
+          this.value = value.slice(0, start - indent.length) + value.slice(end);
+          this.selectionStart = this.selectionEnd = start - indent.length;
+        } else if (beforeCursor.endsWith('\t')) {
+          this.value = value.slice(0, start - 1) + value.slice(end);
+          this.selectionStart = this.selectionEnd = start - 1;
+        }
+      } else {
+        this.value = value.slice(0, start) + indent + value.slice(end);
+        this.selectionStart = this.selectionEnd = start + indent.length;
+      }
+
+      return;
+    }
+
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendQuestion();
+    }
+  });
+
+  if (reloadBtn) {
+    reloadBtn.addEventListener('click', async () => {
+      reloadBtn.disabled = true;
+      const old = reloadBtn.textContent;
+      reloadBtn.textContent = 'Переиндексация...';
+
+      try {
+        await fetch('/reload_kb/', { method: 'POST' });
+      } catch (e) {
+      } finally {
+        reloadBtn.disabled = false;
+        reloadBtn.textContent = old;
+      }
+    });
+  }
+</script>
+</body>
+</html>
