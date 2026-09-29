@@ -1,0 +1,13 @@
+# Установите ОДНО из следующего (не оба):
+
+# Вариант 1: transformers (для GPU или если RAM > 8GB)
+# torch>=2.0
+# transformers>=4.40
+# accelerate>=0.27
+
+# Вариант 2: llama-cpp (для CPU, нужен GGUF файл модели)
+# llama-cpp-python>=0.2.50
+
+# Скачать модель (Qwen2.5-1.5B GGUF, ~1GB, работает на любом ПК):
+# https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf
+# Положить в папку: edu_analytics/models/
